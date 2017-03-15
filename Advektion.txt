@@ -1,0 +1,46 @@
+﻿Advektion
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+L = 2.0 * np.pi     # Intervall
+N = 128.0           # Punkte im Intervall
+Ende=1400           # Endzeitpunkt des Programms
+h=0.02              # Zeitschritt
+c=0.2               # Geschwindigkeit
+
+x = (np.arange(N)-N/2) * L/N
+k = np.zeros(N)
+k[0:N/2+1] = np.arange(N/2+1)*2*np.pi/L
+k[N/2+1:] = np.arange(-N/2+1,0)*2*np.pi/L
+
+u0= np.exp(- 2*np.pi * (x - L / 4)**2 ) # gegebene Gleichung für u0
+uk = np.fft.fft(u0)        # FFT von u0
+
+def ort(c,k,udach): return -1j*k*c*udach # Ortsableitung der DGL mit der Fouriermethode
+		
+
+
+plt.ion()       
+
+for n in range(1,Ende+1,1):
+
+
+    k1 =ort(c,k,uk)
+    k2 =ort(c,k,uk+0.5*h*k1)
+    k3 =ort(c,k,uk+0.5*h*k2)
+    k4 =ort(c,k,uk+h*k3)
+    uk = uk + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
+
+    if n % 20 == 0: # alle 20 Schritte wird ein Plot erstellt und als jpg gespeichert
+        u = np.fft.ifft(uk)
+        plt.cla() 
+        plt.plot(x,u.real)
+        plt.ylabel("u(x,t)")
+        plt.xlabel("x")
+        plt.title('u(x,'+ str(n) + ')')
+        plt.show() 
+        #plt.savefig('{}.jpg'.format(n))   #wurde nur zum erstellen der Bilder für die gif gebraucht
+        plt.pause(0.01)
+
+plt.ioff()   
